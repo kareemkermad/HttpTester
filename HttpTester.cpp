@@ -1,7 +1,7 @@
 #include "httplib.h"
 #include <iostream>
 #include <chrono>
-
+#include <thread>
 int main(int argc, char* argv[])
 {
     std::cout << "HTTP TESTER\n";
@@ -11,7 +11,13 @@ int main(int argc, char* argv[])
     
     httplib::Client client("http://api.sparselab.com");
     auto response = client.Post("/api/StartupTimer", json, "application/json");
-    std::cout << "Error:" << response.error() << std::endl;
+    while (response.error() != httplib::Error::Success)
+    {
+        std::cout << "Error:" << response.error() << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        response = client.Post("/api/StartupTimer", json, "application/json");
+    }
+    
     std::cout << "Status: " << response->status << std::endl;
     std::cout << "Body: " << response->body << std::endl;
 }
